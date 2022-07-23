@@ -5,7 +5,7 @@ A session-management extension with random proxies and User-Agents for Scrapy.
 
 ## Overview
 
-This library is inspired and based on listed above projects to provide all-in-one extension for managing session for Scrapy with random proxy and User-Agent for each session.
+This library is inspired and based on listed above projects to provide all-in-one extension for managing sessions for Scrapy with random proxy and User-Agent for each session.
 
 I tried to keep all features of these projects with some additional capabilities.
 
