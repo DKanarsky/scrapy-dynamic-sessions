@@ -138,6 +138,11 @@ class Proxies(object):
     def __init__(self, proxies_file_path: str) -> None:
         self._proxies = load_proxies(proxies_file_path)
         self._used_proxies = set()
+        if not self._proxies:
+            raise Exception(
+                "There are no proxies loaded from \"%s\"",
+                proxies_file_path
+            )
 
     def update_proxies(self, proxies: Dict):
         for key in proxies.keys():
@@ -155,11 +160,12 @@ class Proxies(object):
         """
 
         proxy_addresses = set(self._proxies.keys())
-        if not (reuse and len(proxy_addresses) == 0):
-            if len(proxy_addresses) == 0:
-                logger.warning("There is no proxy left! Reuse any.")
+        if not self.reuse:
+            fresh_proxies = proxy_addresses - self._used_proxies
+            if len(fresh_proxies) == 0:
+                logger.warning("There is no fresh proxy left! Reuse any.")
             else:
-                proxy_addresses - self._used_proxies
+                proxy_addresses = fresh_proxies
         proxy_addr = random.choice(list(proxy_addresses))
         proxy_auth = self._proxies[proxy_addr]
         # Add proxy to used ones
@@ -211,7 +217,7 @@ class UserAgents(object):
 class Profiles(object):
     """Controls profile storage and rotation. Rotation is random"""
 
-    def __init__(self, proxies: Proxies, ua: UserAgents, reuse_proxy:bool = False):
+    def __init__(self, proxies: Proxies = None, ua: UserAgents = None, reuse_proxy:bool = False):
         self.proxies = proxies
         self.ua = ua
         self.reuse = reuse_proxy
@@ -239,7 +245,8 @@ class Profiles(object):
         """Generate random session
 
         Args:
-            session_id (Union[int,None], optional): session to replace, if None creates new one. Defaults to None.
+            session_id (Union[int,None], optional): session to replace, if None creates new one.
+            Defaults to None.
 
         Returns:
             int: replaced or created session_id
@@ -257,10 +264,12 @@ class Profiles(object):
         return new_session_id
 
     def random_profile(self):
-        return {
-            'proxy': self.proxies.get_random_proxy(self.reuse),
-            'user-agent': self.ua.get_random_ua()
-        }
+        meta = {}
+        if self.proxies:
+            meta['proxy'] = self.proxies.get_random_proxy(self.reuse)
+        if self.ua:
+            meta['user-agent'] = self.ua.get_random_ua()
+        return meta
 
     def add_profile(self, request, session_id=None):
         """Adds session to request. If session_id is None generates random one"""
@@ -283,5 +292,4 @@ class Profiles(object):
                 "Delete profile with id=%s",
                 session_id
             )
-
 
