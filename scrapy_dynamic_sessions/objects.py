@@ -160,7 +160,7 @@ class Proxies(object):
         """
 
         proxy_addresses = set(self._proxies.keys())
-        if not self.reuse:
+        if not reuse:
             fresh_proxies = proxy_addresses - self._used_proxies
             if len(fresh_proxies) == 0:
                 logger.warning("There is no fresh proxy left! Reuse any.")
@@ -254,7 +254,7 @@ class Profiles(object):
 
         if session_id is None:
             new_session_id = self.generated_profiles
-        else: 
+        else:
             new_session_id = session_id
         self.ref[new_session_id] = self.random_profile()
         logger.info(
@@ -292,4 +292,3 @@ class Profiles(object):
                 "Delete profile with id=%s",
                 session_id
             )
-
